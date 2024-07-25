@@ -1,0 +1,31 @@
+version: "3.1"
+
+services:
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      backend:
+        aliases:
+          - redis
+  api:
+    image: node:20-alpine
+    container_name: api
+    user: "node"
+    command: "npm start"
+    working_dir: /home/node/app
+    volumes:
+      - ../:/home/node/app
+    ports:
+      - "3000:3000"
+    networks:
+      backend:
+        aliases:
+          - api
+    depends_on:
+      - redis
+
+networks:
+  backend:
