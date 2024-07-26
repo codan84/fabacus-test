@@ -2,7 +2,7 @@ version: "3.1"
 
 services:
   redis:
-    image: redis/redis-stack:latest
+    image: redis/redis-stack:edge
     container_name: redis
     ports:
       - "6379:6379"
@@ -16,6 +16,8 @@ services:
     user: "node"
     command: "npm start"
     working_dir: /home/node/app
+    environment:
+      - SEAT_HOLD_TTL_SECONDS=60
     volumes:
       - ../:/home/node/app
     ports:

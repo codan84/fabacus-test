@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "seat-availability",
+  "title": "New Event",
+  "description": "Schema for seat availability",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "available": {
+      "type": "boolean"
+    }
+  },
+  "required": ["id", "available"]
+}

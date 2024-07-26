@@ -1,5 +1,6 @@
 import Event from './event.json' assert { type: 'json' }
 import NewEvent from './new-event.json' assert { type: 'json' }
+import SeatAvailability from './seat-availability.json' assert { type: 'json' }
 
 export const schema = {
   openapi: '3.1.0',
@@ -85,12 +86,91 @@ export const schema = {
           }
         }
       }
+    },
+    '/event/{eventId}/seating': {
+      get: {
+        description: 'Returns all seating for a specific event',
+        operationId: 'getEventSeatingById',
+        parameters: [
+          {
+            name: 'eventId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Successfully returned event seating',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    schema: {
+                      $ref: '#/components/schemas/SeatAvailability'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/event/{eventId}/seating/{seatId}/hold/{userId}': {
+      post: {
+        description: 'Hold a specific seat for a specific event',
+        operationId: 'holdSeat',
+        parameters: [
+          {
+            name: 'eventId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          },
+          {
+            name: 'seatId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string'
+            }
+          },
+          {
+            name: 'userId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string'
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Successfully held seat'
+          },
+          404: {
+            description: 'Seat or event not found'
+          },
+          409: {
+            description: 'Seat held or booked by another user'
+          }
+        }
+      }
     }
   },
   components: {
     schemas: {
       NewEvent,
-      Event
+      Event,
+      SeatAvailability
     }
   }
 }
