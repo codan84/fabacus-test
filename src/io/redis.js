@@ -38,6 +38,8 @@ export const holdSeat = async (eventId, seatId, userId) => {
   if (response) {
     await client.sendCommand(['HEXPIRE', `event::${eventId}::unavailable_seats`, `${SEAT_HOLD_TTL_SECONDS}`, 'FIELDS', '1', seatId])
     return
+  } else {
+    return { error: 'Seat already booked', type: 'seat_unavailable' }
   }
 }
 
