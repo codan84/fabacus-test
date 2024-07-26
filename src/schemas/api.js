@@ -164,6 +164,50 @@ export const schema = {
           }
         }
       }
+    },
+    '/event/{eventId}/seating/{seatId}/book/{userId}': {
+      post: {
+        description: 'Book a specific seat for a specific event',
+        operationId: 'bookSeat',
+        parameters: [
+          {
+            name: 'eventId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          },
+          {
+            name: 'seatId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string'
+            }
+          },
+          {
+            name: 'userId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string'
+            }
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Successfully booked seat'
+          },
+          404: {
+            description: 'Seat or event not found'
+          },
+          409: {
+            description: 'Seat held or booked by another user'
+          }
+        }
+      }
     }
   },
   components: {

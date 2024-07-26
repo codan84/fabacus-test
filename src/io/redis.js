@@ -15,10 +15,10 @@ const ensureClientConnected = async () => {
 export const saveEvent = async (event) => {
   await ensureClientConnected()
   await client
-          .multi()
-          .json.set(`event::${event.id}`, '$', event)
-          .sAdd('events', event.id)
-          .exec()
+    .multi()
+    .json.set(`event::${event.id}`, '$', event)
+    .sAdd('events', event.id)
+    .exec()
 }
 
 export const readEvent = async (eventId) => {
@@ -35,21 +35,45 @@ export const listEvents = async () => {
 export const holdSeat = async (eventId, seatId, userId) => {
   await ensureClientConnected()
   const event = await readEvent(eventId)
-  console.log(event)
   if (event && event.availableSeats.includes(seatId)) {
-    const response = await client.HSETNX(`event::${eventId}::holds`, seatId, userId)
+    const response = await client.HSETNX(`event::${eventId}::unavailable_seats`, seatId, `${userId}::hold`)
     if (response) {
-      await client.sendCommand(['HEXPIRE', `event::${eventId}::holds`, `${SEAT_HOLD_TTL_SECONDS}`, 'FIELDS', '1', seatId])
+      await client.sendCommand(['HEXPIRE', `event::${eventId}::unavailable_seats`, `${SEAT_HOLD_TTL_SECONDS}`, 'FIELDS', '1', seatId])
       return
     }
-    return { error: 'Seat is already held', type: 'seat_unavailable' }
+    return { error: 'Seat is unavailable', type: 'seat_unavailable' }
   }
   return { error: 'Seat or event does not exist', type: 'resource_not_found' }
 }
 
 export const getAllHeldSeats = async (eventId) => {
   await ensureClientConnected()
-  return await client.HKEYS(`event::${eventId}::holds`)
+  return await client.HKEYS(`event::${eventId}::unavailable_seats`)
+}
+
+export const getUserIdForSeat = async (eventId, seatId) => {
+  await ensureClientConnected()
+  const response = await client.HGET(`event::${eventId}::unavailable_seats`, seatId)
+  if (response) {
+    return response.split('::')[0]
+  }
+  return null
+}
+
+export const getSeatAvailabilityStatus = async (eventId, seatId) => {
+  await ensureClientConnected()
+  const response = await client.HGET(`event::${eventId}::unavailable_seats`, seatId)
+  if (response) {
+    return response.split('::')[1]
+  }
+  return null
+}
+
+export const bookSeat = async (eventId, seatId, userId) => {
+  await ensureClientConnected()
+  await client.HSET(`event::${eventId}::unavailable_seats`, seatId, `${userId}::book`)
+  // Booked seat doesn't expire
+  await client.sendCommand(['HPERSIST', `event::${eventId}::unavailable_seats`, 'FIELDS', '1', seatId])
 }
 
 export default {
@@ -57,5 +81,8 @@ export default {
   readEvent,
   listEvents,
   holdSeat,
-  getAllHeldSeats
+  getAllHeldSeats,
+  getUserIdForSeat,
+  bookSeat,
+  getSeatAvailabilityStatus
 }

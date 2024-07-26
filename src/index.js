@@ -8,6 +8,7 @@ import { getEvent } from './operations/get-event.js'
 import { listEvents } from './operations/list-events.js'
 import { getSeating } from './operations/get-seating.js'
 import { holdSeat } from './operations/hold-seat.js'
+import { bookSeat } from './operations/book-seat.js'
 
 const app = express()
 app.use(bodyParser.json())
@@ -49,6 +50,24 @@ app.post('/event/:eventId/seating/:seatId/hold/:userId', async (req, res) => {
   const userId = req.params.userId
 
   const result = await holdSeat(eventId, seatId, userId)
+  if (result && result.error) {
+    if (result.type === 'resource_not_found') {
+      return res.status(404).send()
+    }
+    if (result.type === 'seat_unavailable') {
+      return res.status(409).send()
+    }
+    return res.status(400).send()
+  }
+  return res.status(200).send()
+})
+
+app.post('/event/:eventId/seating/:seatId/book/:userId', async (req, res) => {
+  const eventId = req.params.eventId
+  const seatId = req.params.seatId
+  const userId = req.params.userId
+
+  const result = await bookSeat(eventId, seatId, userId)
   if (result && result.error) {
     if (result.type === 'resource_not_found') {
       return res.status(404).send()
