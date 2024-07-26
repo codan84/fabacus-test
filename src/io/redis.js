@@ -12,10 +12,26 @@ const ensureClientConnected = async () => {
 
 export const saveEvent = async (event) => {
   await ensureClientConnected()
-  await client.json.set(`event::${event.id}`, '$', event)
+  await client
+          .multi()
+          .json.set(`event::${event.id}`, '$', event)
+          .sAdd('events', event.id)
+          .exec()
 }
 
 export const readEvent = async (eventId) => {
   await ensureClientConnected()
   return await client.json.get(`event::${eventId}`)
+}
+
+export const listEvents = async () => {
+  await ensureClientConnected()
+  const events = await client.sMembers('events')
+  return events
+}
+
+export default {
+  saveEvent,
+  readEvent,
+  listEvents
 }

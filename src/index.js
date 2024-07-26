@@ -5,14 +5,16 @@ import swaggerUi from 'swagger-ui-express'
 import { schema } from './schemas/api.js'
 import { createEvent } from './operations/create-event.js'
 import { getEvent } from './operations/get-event.js'
+import { listEvents } from './operations/list-events.js'
 
 const app = express()
 app.use(bodyParser.json())
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(schema))
 
-app.get('/event', (req, res) => {
-  return []
+app.get('/event', async (req, res) => {
+  const events = await listEvents()
+  return res.status(200).json(events)
 })
 
 app.put('/event', async (req, res) => {

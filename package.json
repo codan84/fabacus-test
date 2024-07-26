@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "start:docker": "docker compose -f ./docker/docker-compose.yaml up"
   },
   "author": "",
   "license": "ISC",
